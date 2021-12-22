@@ -35,6 +35,7 @@ from demisto_sdk.commands.common.constants import (
     DOC_FILES_DIR, ID_IN_COMMONFIELDS, ID_IN_ROOT, INCIDENT_FIELDS_DIR,
     INCIDENT_TYPES_DIR, INDICATOR_FIELDS_DIR, INDICATOR_TYPES_DIR,
     INTEGRATIONS_DIR, JOBS_DIR, LAYOUTS_DIR, LISTS_DIR,
+    MARKETPLACE_KEY_PACK_METADATA, METADATA_FILE_NAME,
     OFFICIAL_CONTENT_ID_SET_PATH, PACK_METADATA_IRON_BANK_TAG,
     PACKAGE_SUPPORTING_DIRECTORIES, PACKAGE_YML_FILE_REGEX, PACKS_DIR,
     PACKS_DIR_REGEX, PACKS_PACK_IGNORE_FILE_NAME, PACKS_PACK_META_FILE_NAME,
@@ -472,7 +473,7 @@ def get_file(file_path, type_of_file):
             # revert str to stream for loader
             stream = io.StringIO(replaced)
             try:
-                if 'yml' == type_of_file:
+                if type_of_file in ('yml', '.yml'):
                     data_dictionary = yaml.load(stream, Loader=XsoarLoader)
 
                 else:
@@ -2166,3 +2167,24 @@ def get_current_repo() -> Tuple[str, str, str]:
     except git.InvalidGitRepositoryError:
         print_warning('git repo is not found')
         return "Unknown source", '', ''
+
+
+def get_mp_types_from_metadata_by_item(file_path):
+    """
+    Get the supporting marketplaces for the given content item, defined by the mp field in the metadata
+    Args:
+        file_path: path to content item in content repo
+
+    Returns:
+        list of names of supporting marketplaces (current options are marketplacev2 and xsoar)
+    """
+    file_path_parts = Path(file_path).parts
+
+    metadata_path = Path(*file_path_parts[0:2]) / METADATA_FILE_NAME
+    try:
+        with open(metadata_path, 'r') as metadata_file:
+            metadata = json.load(metadata_file)
+            marketplaces = metadata[MARKETPLACE_KEY_PACK_METADATA]
+        return marketplaces
+    except FileNotFoundError:
+        return []
