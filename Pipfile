@@ -57,7 +57,7 @@ dictdiffer = "*"
 setuptools = "*"
 
 [dev-packages]
-mitmproxy = "==5.1.0"
+mitmproxy = "==7.0.3"
 mock = "*"
 pre-commit = "*"
 pytest = "*"
